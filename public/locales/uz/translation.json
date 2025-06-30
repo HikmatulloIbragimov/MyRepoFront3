@@ -1,0 +1,58 @@
+{
+    "refresh": "yangilash",
+    "balance": "balans",
+
+    "navbar.home": "Bosh sahifa",
+    "navbar.games": "O'yinlar",
+    "navbar.replenish": "Hisob",
+    "navbar.profile": "Profil",
+
+
+    "home.popular_games": "Tanlangan o'yinlar",
+    "home.currencies": "Sotuvda",
+    "home.search_placeholder": "O'yinni qidirish",
+    "home.search_results": "{{count}} ta topildi",
+    "home.no_results": "{{query}} bo'yicha natija yo'q",
+
+    "game.region": "Server yoki Region",
+    "game.no_merchandise": "Bu yerda mahsulotlar hozircha yo'q",
+    "game.checkout": "Keyingisi",
+    "game.buy_button": "Tanlash",
+
+    "games.title": "O'yinlar",
+
+    "checkout.title": "Buyurtma berish",
+    "checkout.selected_items": "Siz sotib olyapsiz",
+    "checkout.total": "Jami",
+    "checkout.complete_purchase": "Hammasi to'g'ri, shularni olaman",
+    "checkout.input_placeholder": "{{input}} ni kiriting",
+    "checkout.no_items": "Savat bo'sh <- orqaga qayting",
+
+    "checkout.purchase_success": "Zakazni qabul qildik, iltimos kuting!",
+    "checkout.purchase_error": "Xatolik berdi, biroz vaqtdan so'ng qayta urinib ko'ring!",
+    "checkout.network_error": "Internet bilan aloqa uzildi, antenna bor joyda qayta urining!",
+
+    "replenish.title": "Hisob",
+    "replenish.description": "Ushbu kartalardan biriga pulni o'tkazib \"keyingi\" tugmasini bosing",
+    "replenish.done": "Pulni o'tkazdim --> keyingisi",
+
+    "verify.title": "Tasdiqlash",
+    "verify.amount": "Summa",
+    "verify.amount_placeholder": "Qancha o'tkazdingiz ?",
+    "verify.cheque": "Chek/Skrinshot isbot",
+    "verify.upload_cheque": "Chekni tanlang",
+    "verify.upload_cheque_description": "Chekni oldindan rasmga olib shu yerga kiring, yoki kamera bilan rasmga oling",
+    "verify.upload_cheque_size": "Rasm {{size}} dan oshmasin",
+    "verify.upload": "Galereya",
+    "verify.submit": "Jo'natish",
+
+    "profile.title": "Profil",
+    "profile.support_title": "Yordam menyusi",
+    "profile.support": "Admin bilan bog'lanish",
+    "profile.replenish": "Hisobni to'ldirish/Pul solish",
+    "profile.terms": "Balo ... va h.kazo",
+    "profile.privacy": "Battar ... va h.kazo",
+
+    "checkout.processing": "Zakaz yuborilmoqda",
+    "verify.submitting": "Adminga yuborilmoqda"
+}
