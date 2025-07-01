@@ -7,11 +7,18 @@ const TextBalance = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const userStr = sessionStorage.getItem("tgUser");
-    const userId = sessionStorage.getItem("tgUserId");
+    if (typeof window === "undefined") return;
 
-    alert("tgUser: " + userStr); // покажет JWT
-    alert("tgUserId: " + userId); // покажет id
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    if (tgUser?.id) {
+      sessionStorage.setItem("tgUserId", tgUser.id.toString());
+      sessionStorage.setItem("tgUser", JSON.stringify(tgUser));
+    } else {
+      console.warn("Telegram user not found");
+    }
+
+    const userId = tgUser?.id?.toString() || sessionStorage.getItem("tgUserId");
 
     if (!userId) return;
 
@@ -28,8 +35,11 @@ const TextBalance = () => {
         } else {
           console.error("Balance not found in response", data);
         }
+      })
+      .catch((error) => {
+        console.error("Error fetching balance:", error);
       });
-  }, []); // ← важное изменение
+  }, []);
 
   return fetched ? (
     <p className="text-[#8c8b5f] text-base font-normal leading-normal capitalize">

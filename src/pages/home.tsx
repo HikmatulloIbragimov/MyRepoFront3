@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Route } from "../routes/__root";
 import LangSwitcher from "../components/langSwitcher";
 import HomeBalance from "../components/home-balance";
-
+import "../types/telegram.d"
 interface Game {
   name: string;
   name_ru: string;
@@ -71,7 +71,7 @@ export const Home = () => {
     {}
   );
   const [loading, setLoading] = useState(false);
-
+    
   // Fetch game details for all games
   useEffect(() => {
     const fetchGameDetails = async () => {
