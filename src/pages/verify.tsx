@@ -106,7 +106,7 @@ export const Verify = () => {
       formData.append("image", selectedFile);
 
       const response = await fetch(
-        import.meta.env.VITE_API_URL + "/api/verify/",
+        import.meta.env.VITE_API_URL + "/verify/",
         {
           headers: {
             "X-User-ID": user,

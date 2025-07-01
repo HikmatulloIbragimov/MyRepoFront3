@@ -258,7 +258,7 @@ export const Checkout: React.FC = () => {
       });
 
       const response = await fetch(
-        import.meta.env.VITE_API_URL + "/api/buy/?" + searchparams,
+        import.meta.env.VITE_API_URL + "/buy/?" + searchparams,
         {
           method: "GET",
           headers: {
