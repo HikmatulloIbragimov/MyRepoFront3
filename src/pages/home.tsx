@@ -10,18 +10,6 @@ import { Route } from "../routes/__root";
 import LangSwitcher from "../components/langSwitcher";
 import HomeBalance from "../components/home-balance";
 import "../types/telegram.d"
-
-
-useEffect(() => {
-  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  if (tgUser?.id) {
-    sessionStorage.setItem("tgUserId", tgUser.id.toString());
-    sessionStorage.setItem("tgUser", JSON.stringify(tgUser));
-    console.log("✅ tgUser сохранён:", tgUser);
-  } else {
-    console.warn("❗ Telegram user не найден в initDataUnsafe");
-  }
-}, []);
 interface Game {
   name: string;
   name_ru: string;
@@ -75,6 +63,20 @@ interface SearchResult {
 }
 
 export const Home = () => {
+  useEffect(() => {
+    try {
+      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      if (tgUser?.id) {
+        sessionStorage.setItem("tgUserId", tgUser.id.toString());
+        sessionStorage.setItem("tgUser", JSON.stringify(tgUser));
+        console.log("✅ tgUser сохранён:", tgUser);
+      } else {
+        console.warn("❗ Telegram user не найден в initDataUnsafe");
+      }
+    } catch (err) {
+      console.error("❌ Ошибка Telegram init:", err);
+    }
+  }, []);
   const { t, i18n } = useTranslation();
   const { data } = Route.useLoaderData() as { data: AppData };
 
