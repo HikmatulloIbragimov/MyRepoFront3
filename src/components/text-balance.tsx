@@ -6,11 +6,14 @@ const TextBalance = () => {
   const [fetched, setFetched] = useState(false);
   const { t } = useTranslation();
 
-  const userId = sessionStorage.getItem("tgUserId");
-
   useEffect(() => {
+    const userStr = sessionStorage.getItem("tgUser");
+    const userId = sessionStorage.getItem("tgUserId");
+
+    alert("tgUser: " + userStr); // покажет JWT
+    alert("tgUserId: " + userId); // покажет id
+
     if (!userId) return;
-    alert("User ID: " + userId);
 
     fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
       headers: {
@@ -26,7 +29,7 @@ const TextBalance = () => {
           console.error("Balance not found in response", data);
         }
       });
-  }, [userId]);
+  }, []); // ← важное изменение
 
   return fetched ? (
     <p className="text-[#8c8b5f] text-base font-normal leading-normal capitalize">
