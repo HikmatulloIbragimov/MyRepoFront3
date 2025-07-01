@@ -10,7 +10,7 @@ const HomeBalance = () => {
   useEffect(() => {
     if (!user) return;
   
-    fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
+    fetch(import.meta.env.VITE_API_URL + "/balance/", {
       headers: {
         "X-User-ID": user,
       },
