@@ -7,45 +7,34 @@ import { useEffect } from "react";
 // ).get("tgWebAppData");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// const decodeNget = (source: string, key: string): any => {
-//   const params = new URLSearchParams(decodeURIComponent(source));
-//   return params.get(key);
-// };
+const decodeNget = (source: string, key: string): any => {
+  const params = new URLSearchParams(decodeURIComponent(source));
+  return params.get(key);
+};
 
 export default function UpdateUser() {
-  useEffect(() => {
-    const raw = sessionStorage.getItem("tgUser");
-    if (raw) {
-      const decoded = atob(raw);
-      console.log(decoded); // в случае, если откроешь в десктоп-версии Telegram с DevTools
-      alert("tgUser:\n" + decoded); // временно можно так
-    }
-  }, []);
   useEffect(() => {
     const seen = sessionStorage.getItem("tgUser");
 
     if (!seen) {
       try {
-        const hash = decodeURIComponent(window.location.hash.slice(1));
-        const params = new URLSearchParams(hash);
+        const userJSON = JSON.parse(
+          !decodeURIComponent(window.location.hash).startsWith(
+            "#tgWebAppData=query_id="
+          )
+            ? decodeNget(window.location.hash.slice(1), "tgWebAppData").slice(5)
+            : decodeNget(window.location.hash.slice(14), "user")
+        );
 
-        const userRaw = params.get("user"); // уже строка JSON
+        sessionStorage.setItem("tgUser", btoa(JSON.stringify(userJSON)));
 
-        if (!userRaw) return;
-
-        const userJSON = JSON.parse(userRaw); // теперь точно JSON-объект
-
-        if (userJSON?.id) {
-          sessionStorage.setItem("tgUser", btoa(JSON.stringify(userJSON)));
-
-          fetch(
-            import.meta.env.VITE_API_URL +
-              "/update-user/?" +
-              new URLSearchParams(userJSON).toString()
-          );
-        }
-      } catch (e) {
-        console.log("Ошибка при разборе tgUser:", e);
+        fetch(
+          import.meta.env.VITE_API_URL +
+            "/update-user/?" +
+            new URLSearchParams(userJSON).toString()
+        );
+      } catch {
+        console.log("baa");
       }
     }
   }, []);

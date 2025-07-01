@@ -9,7 +9,7 @@ const HomeBalance = () => {
 
   useEffect(() => {
     if (!user) return;
-  
+
     fetch(import.meta.env.VITE_API_URL + "/balance/", {
       headers: {
         "X-User-ID": user,
@@ -23,7 +23,9 @@ const HomeBalance = () => {
         } else {
           console.error("Balance not found in response", data);
         }
-      });
+      }).catch((err) => {
+        console.error("Ошибка при получении баланса:", err);
+      });;
   }, [user]);
 
   return fetched ? (
