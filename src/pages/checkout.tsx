@@ -139,6 +139,7 @@ export const Checkout: React.FC = () => {
     // Add all non-zero quantities to search params
     Object.entries(quantities).forEach(([itemKey, quantity]) => {
       if (quantity > 0) {
+        alert("Отправляется item: " + itemKey); // <-- вот здесь
         searchParams.set(itemKey, quantity.toString());
       }
     });
