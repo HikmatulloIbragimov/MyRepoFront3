@@ -29,6 +29,7 @@ const TextBalance = () => {
 
     try {
       alert("📡 Отправка запроса на баланс...");
+      alert("🔑 user = " + user);
       fetch("https://djangobasedback-production.up.railway.app/api/balance/", {
         headers: {
           "X-User-ID": user,
