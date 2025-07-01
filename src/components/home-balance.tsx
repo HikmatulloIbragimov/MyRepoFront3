@@ -1,18 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useTelegramUser } from "../hooks/useTelegramUser";
 
 const HomeBalance = () => {
   const [balance, setBalance] = useState(0);
   const [fetched, setFetched] = useState(false);
-
-  const user = sessionStorage.getItem("tgUser");
+  const tgUser = useTelegramUser();
 
   useEffect(() => {
-    if (!user) return;
+    if (!tgUser?.id) return;
 
     fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
       headers: {
-        "X-User-ID": user,
+        "X-User-ID": tgUser.id.toString(),
       },
     })
       .then((response) => response.json())
@@ -23,10 +23,11 @@ const HomeBalance = () => {
         } else {
           console.error("Balance not found in response", data);
         }
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.error("Ошибка при получении баланса:", err);
-      });;
-  }, [user]);
+      });
+  }, [tgUser]);
 
   return fetched ? (
     <Link to="/replenish" className="bg-orange-300 select-none rounded-md">
