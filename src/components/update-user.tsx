@@ -40,7 +40,7 @@ export default function UpdateUser() {
 
           fetch(
             import.meta.env.VITE_API_URL +
-              "/api/update-user/?" +
+              "/update-user/?" +
               new URLSearchParams(userJSON).toString()
           );
         }

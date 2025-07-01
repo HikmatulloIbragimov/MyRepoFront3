@@ -28,9 +28,8 @@ const TextBalance = () => {
     if (!user) return;
 
     try {
-      alert("🔑 user = " + user);
       alert("📡 Отправка запроса на баланс...");
-      fetch("https://djangobasedback-production.up.railway.app/api/balance/", {
+      fetch(import.meta.env.VITE_API_URL + "/balance/", {
         headers: {
           "X-User-ID": user,
         },
@@ -47,7 +46,7 @@ const TextBalance = () => {
         })
         .catch((err) => {
           alert("❌ Ошибка сети:\n" + err.message);
-          alert("🌐 API_URL = " + "https://djangobasedback-production.up.railway.app/api/balance/");
+          alert("🌐 API_URL = " + import.meta.env.VITE_API_URL);
         });
     } catch (err) {
       alert("❌ Ошибка при отправке запроса");
