@@ -28,8 +28,8 @@ const TextBalance = () => {
     if (!user) return;
 
     try {
-      alert("📡 Отправка запроса на баланс...");
       alert("🔑 user = " + user);
+      alert("📡 Отправка запроса на баланс...");
       fetch("https://djangobasedback-production.up.railway.app/api/balance/", {
         headers: {
           "X-User-ID": user,
