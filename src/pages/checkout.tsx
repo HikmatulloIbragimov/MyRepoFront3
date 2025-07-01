@@ -102,29 +102,25 @@ export const Checkout: React.FC = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const selectedItems: CheckoutItem[] = [];
     const initialQuantities: Quantities = {};
-
-    urlParams.forEach((quantity, itemKey) => {
+  
+    urlParams.forEach((quantity, itemSlug) => {
       const qty = parseInt(quantity);
       if (qty > 0) {
-        // Find the merchandise item by slug or fallback method
         const item = gameData.game.merchandise.find(
-          (merch) =>
-            merch.slug === itemKey ||
-            `${merch.category}-${gameData.game.merchandise.indexOf(merch)}` ===
-              itemKey
+          (merch) => merch.slug === itemSlug
         );
-
+  
         if (item) {
           selectedItems.push({
             item,
             quantity: qty,
-            itemKey,
+            itemKey: itemSlug,
           });
-          initialQuantities[itemKey] = qty;
+          initialQuantities[itemSlug] = qty;
         }
       }
     });
-
+  
     setCheckoutItems(selectedItems);
     setQuantities(initialQuantities);
   }, [gameData.game.merchandise]);
