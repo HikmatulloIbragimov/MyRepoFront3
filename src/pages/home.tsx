@@ -72,6 +72,24 @@ export const Home = () => {
   );
   const [loading, setLoading] = useState(false);
 
+
+  useEffect(() => {
+    const tgUser = sessionStorage.getItem("tgUser");
+    if (!tgUser) {
+      alert("⚠️ tgUser НЕ найден в sessionStorage");
+    } else {
+      try {
+        const decoded = atob(tgUser);
+        alert("✅ tgUser найден:\n" + decoded);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          alert("❌ tgUser есть, но не удалось расшифровать:\n" + e.message);
+        } else {
+          alert("❌ Неизвестная ошибка при расшифровке tgUser");
+        }
+      }
+    }
+  }, []);
   // Fetch game details for all games
   useEffect(() => {
     const fetchGameDetails = async () => {

@@ -6,7 +6,8 @@ const TextBalance = () => {
   const [fetched, setFetched] = useState(false);
   const [user, setUser] = useState<string | null>(null);
   const { t } = useTranslation();
-
+  
+  
   // Загружаем tgUser из sessionStorage при первом рендере
   useEffect(() => {
     const stored = sessionStorage.getItem("tgUser");
