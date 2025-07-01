@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Route } from "../routes/__root";
 import LangSwitcher from "../components/langSwitcher";
 import HomeBalance from "../components/home-balance";
-import "../types/telegram.d"
+
 interface Game {
   name: string;
   name_ru: string;
@@ -63,20 +63,6 @@ interface SearchResult {
 }
 
 export const Home = () => {
-  useEffect(() => {
-    try {
-      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-      if (tgUser?.id) {
-        sessionStorage.setItem("tgUserId", tgUser.id.toString());
-        sessionStorage.setItem("tgUser", JSON.stringify(tgUser));
-        console.log("✅ tgUser сохранён:", tgUser);
-      } else {
-        console.warn("❗ Telegram user не найден в initDataUnsafe");
-      }
-    } catch (err) {
-      console.error("❌ Ошибка Telegram init:", err);
-    }
-  }, []);
   const { t, i18n } = useTranslation();
   const { data } = Route.useLoaderData() as { data: AppData };
 
@@ -85,7 +71,7 @@ export const Home = () => {
     {}
   );
   const [loading, setLoading] = useState(false);
-    
+
   // Fetch game details for all games
   useEffect(() => {
     const fetchGameDetails = async () => {
