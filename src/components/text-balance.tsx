@@ -4,17 +4,17 @@ import { useTranslation } from "react-i18next";
 const TextBalance = () => {
   const [balance, setBalance] = useState(0);
   const [fetched, setFetched] = useState(false);
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
-  const user = sessionStorage.getItem("tgUser");
+  const userId = sessionStorage.getItem("tgUserId");
 
   useEffect(() => {
-    if (!user) return;
-    alert("User ID: " + user);
+    if (!userId) return;
+    alert("User ID: " + userId);
 
     fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
       headers: {
-        "X-User-ID": user,
+        "X-User-ID": userId,
       },
     })
       .then((response) => response.json())
@@ -26,11 +26,11 @@ const TextBalance = () => {
           console.error("Balance not found in response", data);
         }
       });
-  }, [user]);
+  }, [userId]);
 
   return fetched ? (
     <p className="text-[#8c8b5f] text-base font-normal leading-normal capitalize">
-      {t('balance')}: {balance} so'm
+      {t("balance")}: {balance} so'm
     </p>
   ) : (
     <p className="text-[#8c8b5f] text-base font-normal leading-normal h-5 w-12 animate-pulse" />
