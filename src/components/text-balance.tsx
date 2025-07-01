@@ -9,22 +9,23 @@ const TextBalance = () => {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const isTelegramAvailable = !!window.Telegram?.WebApp;
+    alert("Telegram SDK доступен: " + isTelegramAvailable);
+
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    alert("tgUser: " + JSON.stringify(tgUser));
 
     if (tgUser?.id) {
       sessionStorage.setItem("tgUserId", tgUser.id.toString());
       sessionStorage.setItem("tgUser", JSON.stringify(tgUser));
     } else {
       console.warn("Telegram user not found");
+      return;
     }
-
-    const userId = tgUser?.id?.toString() || sessionStorage.getItem("tgUserId");
-
-    if (!userId) return;
 
     fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
       headers: {
-        "X-User-ID": userId,
+        "X-User-ID": tgUser.id.toString(),
       },
     })
       .then((response) => response.json())
