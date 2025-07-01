@@ -7,39 +7,50 @@ const TextBalance = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    const loadUserAndBalance = () => {
+      const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+      const isTelegramAvailable = !!window.Telegram?.WebApp;
 
-    const isTelegramAvailable = !!window.Telegram?.WebApp;
-    alert("Telegram SDK доступен: " + isTelegramAvailable);
+      alert("Telegram SDK доступен: " + isTelegramAvailable);
+      alert("tgUser: " + JSON.stringify(tgUser));
 
-    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    alert("tgUser: " + JSON.stringify(tgUser));
+      if (!tgUser?.id) {
+        alert("❗ initData.user не найден!");
+        return;
+      }
 
-    if (tgUser?.id) {
+      // Сохраняем в sessionStorage
       sessionStorage.setItem("tgUserId", tgUser.id.toString());
       sessionStorage.setItem("tgUser", JSON.stringify(tgUser));
-    } else {
-      console.warn("Telegram user not found");
-      return;
-    }
 
-    fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
-      headers: {
-        "X-User-ID": tgUser.id.toString(),
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data && typeof data.balance !== "undefined") {
-          setBalance(data.balance);
-          setFetched(true);
-        } else {
-          console.error("Balance not found in response", data);
-        }
+      // Загружаем баланс
+      fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
+        headers: {
+          "X-User-ID": tgUser.id.toString(),
+        },
       })
-      .catch((error) => {
-        console.error("Error fetching balance:", error);
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          if (typeof data.balance !== "undefined") {
+            setBalance(data.balance);
+            setFetched(true);
+          } else {
+            console.error("❗ balance не найден в ответе:", data);
+          }
+        })
+        .catch((err) => {
+          console.error("❗ Ошибка запроса:", err);
+        });
+    };
+
+    // Если Telegram WebApp загружен — вызываем
+    if (document.readyState === "complete") {
+      setTimeout(loadUserAndBalance, 300); // задержка на инициализацию
+    } else {
+      window.addEventListener("load", () =>
+        setTimeout(loadUserAndBalance, 300)
+      );
+    }
   }, []);
 
   return fetched ? (
