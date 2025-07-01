@@ -10,6 +10,7 @@ const TextBalance = () => {
 
   useEffect(() => {
     if (!user) return;
+    alert("User ID: " + user);
 
     fetch(import.meta.env.VITE_API_URL + "/api/balance/", {
       headers: {
