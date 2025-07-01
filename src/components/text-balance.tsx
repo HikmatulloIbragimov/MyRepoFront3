@@ -46,10 +46,12 @@ const TextBalance = () => {
         })
         .catch((err) => {
           alert("❌ Ошибка сети:\n" + err.message);
+          alert("🌐 API_URL = " + import.meta.env.VITE_API_URL);
         });
     } catch (err) {
       alert("❌ Ошибка при отправке запроса");
     }
+    
   }, [user]);
 
   // 3. UI
