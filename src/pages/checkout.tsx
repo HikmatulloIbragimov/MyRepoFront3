@@ -246,7 +246,7 @@ export const Checkout: React.FC = () => {
 
     try {
       const cart = checkoutItems
-        .map((item) => `${item.item.id}:${item.quantity}`)
+        .map((item) => `${item.item.slug}:${item.quantity}`)
         .join(",");
 
       const inputs = inputFields
