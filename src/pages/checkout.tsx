@@ -245,62 +245,59 @@ export const Checkout: React.FC = () => {
     setPurchaseStatus(null);
 
     try {
-      const cart = checkoutItems
-        .map((item) => `${item.item.slug}:${item.quantity}`)
-        .join(",");
-
+      // Сборка строки inputs: username:PlayerOne,email:test@mail.com
       const inputs = inputFields
         .map((field) => `${field}:${dynamicInputs[field]}`)
         .join(",");
-
-      const searchparams = new URLSearchParams({
-        inputs,
-        cart,
+  
+      // Подготовка URL параметров: добавляем inputs и каждый товар (slug: qty)
+      const searchparams = new URLSearchParams();
+      searchparams.set("inputs", inputs);
+  
+      checkoutItems.forEach((item) => {
+        searchparams.set(item.item.slug, item.quantity.toString());
       });
-
+  
+      // Отправка запроса на backend
       const response = await fetch(
         import.meta.env.VITE_API_URL + "/buy/?" + searchparams,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "X-User-ID": user,
+            "X-User-ID": user, // передаём base64
           },
         }
       );
-
+  
+      // Обработка ответа
       if (response.ok) {
         const result = await response.json();
         setPurchaseStatus({
           success: true,
-          message:
-            result.message ||
-            t("checkout.purchase_success"),
+          message: result.message || t("checkout.purchase_success"),
         });
-
-        // Clear the cart and inputs after successful purchase
+  
+        // Очистка состояния
         setCheckoutItems([]);
         setQuantities({});
         setDynamicInputs({});
-
-        // Update URL to remove cart items
+  
+        // Очистка URL (удаляем query)
         const url = new URL(window.location.href);
         window.history.replaceState({}, "", url.pathname);
       } else {
         const errorData = await response.json().catch(() => ({}));
         setPurchaseStatus({
           success: false,
-          message:
-            errorData.message ||
-            t("checkout.purchase_error"),
+          message: errorData.message || t("checkout.purchase_error"),
         });
       }
     } catch (error) {
       console.error("Purchase error:", error);
       setPurchaseStatus({
         success: false,
-        message:
-          t("checkout.network_error"),
+        message: t("checkout.network_error"),
       });
     } finally {
       setIsProcessing(false);
