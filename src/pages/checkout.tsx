@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-
 import { Route } from "../routes/game/$gameSlug/checkout";
 
 interface Price {
@@ -54,7 +52,7 @@ interface Game {
   servers: Server[];
   merchandise: MerchandiseItem[];
   categories: Category[];
-  inputs?: string; // Dynamic inputs like "userId,serverId"
+  inputs?: string;
 }
 
 interface GameData {
@@ -103,16 +101,18 @@ export const Checkout: React.FC = () => {
     const selectedItems: CheckoutItem[] = [];
     const initialQuantities: Quantities = {};
 
+    console.log("URL Parameters:", Array.from(urlParams.entries()));
+    console.log("Available merchandise:", gameData.game.merchandise.map(m => ({ id: m.id, slug: m.slug, name: m.name })));
+
     urlParams.forEach((quantity, itemKey) => {
       const qty = parseInt(quantity);
       if (qty > 0) {
-        // Find the merchandise item by slug or fallback method
+        // Ищем товар только по slug
         const item = gameData.game.merchandise.find(
-          (merch) =>
-            merch.slug === itemKey ||
-            `${merch.category}-${gameData.game.merchandise.indexOf(merch)}` ===
-              itemKey
+          (merch) => merch.slug === itemKey
         );
+
+        console.log(`Looking for item with slug: ${itemKey}, found:`, item);
 
         if (item) {
           selectedItems.push({
@@ -121,10 +121,13 @@ export const Checkout: React.FC = () => {
             itemKey,
           });
           initialQuantities[itemKey] = qty;
+        } else {
+          console.warn(`Item with slug "${itemKey}" not found in merchandise list`);
         }
       }
     });
 
+    console.log("Selected items:", selectedItems);
     setCheckoutItems(selectedItems);
     setQuantities(initialQuantities);
   }, [gameData.game.merchandise]);
@@ -135,11 +138,10 @@ export const Checkout: React.FC = () => {
 
     const url = new URL(window.location.href);
     const searchParams = new URLSearchParams();
-    alert("🧪 quantities: " + JSON.stringify(quantities));
+    
     // Add all non-zero quantities to search params
     Object.entries(quantities).forEach(([itemKey, quantity]) => {
       if (quantity > 0) {
-        alert("Отправляется item: " + itemKey); // <-- вот здесь
         searchParams.set(itemKey, quantity.toString());
       }
     });
@@ -252,11 +254,15 @@ export const Checkout: React.FC = () => {
   
       // Подготовка URL параметров: добавляем inputs и каждый товар (slug: qty)
       const searchparams = new URLSearchParams();
-      searchparams.set("inputs", inputs);
+      if (inputs) {
+        searchparams.set("inputs", inputs);
+      }
   
       checkoutItems.forEach((item) => {
         searchparams.set(item.item.slug, item.quantity.toString());
       });
+
+      console.log("Sending request with params:", searchparams.toString());
   
       // Отправка запроса на backend
       const response = await fetch(
@@ -311,11 +317,11 @@ export const Checkout: React.FC = () => {
   const isPurchaseDisabled = isProcessing || checkoutItems.length === 0 || !areAllInputsFilled();
 
   return (
-    <div className="bg-white">
-      <div className="flex items-center bg-white px-4 py-2 justify-between">
+    <div className="bg-white min-h-screen">
+      <div className="flex items-center bg-white px-4 py-2 justify-between border-b border-gray-200">
         <Link
           to={`/game/${gameSlug}/`}
-          className="text-[#161613] flex size-12 shrink-0 items-center"
+          className="text-[#161613] flex size-12 shrink-0 items-center hover:bg-gray-100 rounded-lg transition-colors"
           data-icon="ArrowLeft"
           data-size="24px"
           data-weight="regular"
@@ -331,178 +337,188 @@ export const Checkout: React.FC = () => {
           </svg>
         </Link>
         <h2 className="text-[#161613] text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">
-          {t("checkout.title")}
+          {t("checkout.title") || "Checkout"}
         </h2>
       </div>
 
-      {/* Purchase Status Message */}
-      {purchaseStatus && (
-        <div
-          className={`mx-4 my-3 p-3 rounded-xl ${
-            purchaseStatus.success
-              ? "bg-green-100 border border-green-300 text-green-800"
-              : "bg-red-100 border border-red-300 text-red-800"
-          }`}
-        >
-          <p className="text-sm font-medium">{purchaseStatus.message}</p>
-        </div>
-      )}
+      <div className="max-w-md mx-auto">
+        {/* Purchase Status Message */}
+        {purchaseStatus && (
+          <div
+            className={`mx-4 my-4 p-4 rounded-xl ${
+              purchaseStatus.success
+                ? "bg-green-50 border border-green-200 text-green-800"
+                : "bg-red-50 border border-red-200 text-red-800"
+            }`}
+          >
+            <p className="text-sm font-medium">{purchaseStatus.message}</p>
+          </div>
+        )}
 
-      {/* Dynamic Input Fields */}
-      {inputFields.map((inputKey) => (
-        <div
-          key={inputKey}
-          className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3"
-        >
-          <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-[#161613] text-base font-medium leading-normal pb-2">
-              {inputKey} <span className="text-red-500">*</span>
+        {/* Dynamic Input Fields */}
+        {inputFields.map((inputKey) => (
+          <div
+            key={inputKey}
+            className="px-4 py-3"
+          >
+            <label className="flex flex-col">
+              <p className="text-[#161613] text-base font-medium leading-normal pb-2">
+                {inputKey} <span className="text-red-500">*</span>
+              </p>
+              <input
+                placeholder={t(`checkout.input_placeholder`, {"input": inputKey}) || `Enter ${inputKey}`}
+                value={dynamicInputs[inputKey] || ""}
+                onChange={(e) => handleInputChange(inputKey, e.target.value)}
+                disabled={isProcessing}
+                required
+                type={
+                  inputKey === "email"
+                    ? "email"
+                    : inputKey === "phoneNumber"
+                      ? "tel"
+                      : "text"
+                }
+                className={`form-input flex w-full resize-none overflow-hidden rounded-xl text-[#161613] focus:outline-0 focus:ring-2 focus:ring-blue-500 border h-14 placeholder:text-[#80806b] p-4 text-base font-normal leading-normal disabled:opacity-50 transition-colors ${
+                  dynamicInputs[inputKey]?.trim() === "" && inputFields.length > 0
+                    ? "bg-red-50 border-red-200"
+                    : "bg-[#f3f3f1] border-gray-200"
+                }`}
+              />
+            </label>
+          </div>
+        ))}
+
+        {/* Warning message for missing required fields */}
+        {inputFields.length > 0 && !areAllInputsFilled() && checkoutItems.length > 0 && (
+          <div className="mx-4 my-3 p-3 rounded-xl bg-yellow-50 border border-yellow-200 text-yellow-800">
+            <p className="text-sm font-medium">
+              {t("checkout.required_fields_warning") || "Please fill in all required fields to complete your purchase."}
             </p>
-            <input
-              placeholder={t(`checkout.input_placeholder`, {"input": inputKey})}
-              value={dynamicInputs[inputKey] || ""}
-              onChange={(e) => handleInputChange(inputKey, e.target.value)}
-              disabled={isProcessing}
-              required
-              type={
-                inputKey === "email"
-                  ? "email"
-                  : inputKey === "phoneNumber"
-                    ? "tel"
-                    : "text"
-              }
-              className={`form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#161613] focus:outline-0 focus:ring-0 border-none focus:border-none h-14 placeholder:text-[#80806b] p-4 text-base font-normal leading-normal disabled:opacity-50 ${
-                dynamicInputs[inputKey]?.trim() === "" && inputFields.length > 0
-                  ? "bg-red-50 border border-red-200"
-                  : "bg-[#f3f3f1]"
-              }`}
-            />
-          </label>
-        </div>
-      ))}
+          </div>
+        )}
 
-      {/* Warning message for missing required fields */}
-      {inputFields.length > 0 && !areAllInputsFilled() && checkoutItems.length > 0 && (
-        <div className="mx-4 my-3 p-3 rounded-xl bg-yellow-100 border border-yellow-300 text-yellow-800">
-          <p className="text-sm font-medium">
-            {t("checkout.required_fields_warning") || "Please fill in all required fields to complete your purchase."}
-          </p>
-        </div>
-      )}
+        {/* Selected Merchandise */}
+        {checkoutItems.length > 0 && (
+          <div className="px-4 py-3">
+            <h3 className="text-[#161613] text-lg font-bold leading-tight tracking-[-0.015em] pb-3">
+              {t("checkout.selected_items") || "Selected Items"}
+            </h3>
 
-      {/* Selected Merchandise */}
-      {checkoutItems.length > 0 && (
-        <div className="px-4 py-3">
-          <h3 className="text-[#161613] text-lg font-bold leading-tight tracking-[-0.015em] pb-3">
-            {t("checkout.selected_items") || "Selected Items"}
-          </h3>
-
-          <div className="bg-white rounded-xl border border-[#e6e6db] overflow-hidden">
-            {checkoutItems.map((checkoutItem, index) => (
-              <div
-                key={checkoutItem.itemKey}
-                className={`flex items-center gap-4 px-4 py-3 ${index !== checkoutItems.length - 1 ? "border-b border-[#e6e6db]" : ""}`}
-              >
-                <div className="flex-1">
-                  <p className="text-[#161613] text-base font-medium leading-normal">
-                    {getCurrentLanguageName(checkoutItem.item)}
-                  </p>
-                  <p className="text-[#80806b] text-sm font-normal leading-normal">
-                    {checkoutItem.item.prices[0]?.price.toLocaleString()}{" "}
-                    {checkoutItem.item.prices[0]?.currency}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <button
-                      className={`text-base font-medium leading-normal flex h-8 w-8 items-center justify-center rounded-full bg-[#f3f3f1] cursor-pointer hover:bg-[#e6e6db] disabled:opacity-50 disabled:cursor-not-allowed ${checkoutItem.quantity === 1 ? "opacity-0" : ""}`}
-                      onClick={() =>
-                        checkoutItem.quantity !== 1 &&
-                        updateQuantity(checkoutItem.itemKey, -1)
-                      }
-                      disabled={isProcessing}
-                    >
-                      -
-                    </button>
-
-                    <span className="text-base font-medium leading-normal min-w-[2rem] text-center">
-                      {checkoutItem.quantity}
-                    </span>
-                    <button
-                      className="text-base font-medium leading-normal flex h-8 w-8 items-center justify-center rounded-full bg-[#f3f3f1] cursor-pointer hover:bg-[#e6e6db] disabled:opacity-50 disabled:cursor-not-allowed"
-                      onClick={() => updateQuantity(checkoutItem.itemKey, 1)}
-                      disabled={isProcessing}
-                    >
-                      +
-                    </button>
+            <div className="bg-white rounded-xl border border-[#e6e6db] overflow-hidden shadow-sm">
+              {checkoutItems.map((checkoutItem, index) => (
+                <div
+                  key={checkoutItem.itemKey}
+                  className={`flex items-center gap-4 px-4 py-4 ${index !== checkoutItems.length - 1 ? "border-b border-[#e6e6db]" : ""}`}
+                >
+                  <div className="flex-1">
+                    <p className="text-[#161613] text-base font-medium leading-normal">
+                      {getCurrentLanguageName(checkoutItem.item)}
+                    </p>
+                    <p className="text-[#80806b] text-sm font-normal leading-normal">
+                      {checkoutItem.item.prices[0]?.price.toLocaleString()}{" "}
+                      {checkoutItem.item.prices[0]?.currency}
+                    </p>
                   </div>
 
-                  <button
-                    className="text-red-600 hover:text-red-800 p-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => removeItem(checkoutItem.itemKey)}
-                    disabled={isProcessing}
-                    title={t("checkout.remove_item") || "Remove item"}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      fill="currentColor"
-                      viewBox="0 0 256 256"
-                    >
-                      <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        className={`text-base font-medium leading-normal flex h-8 w-8 items-center justify-center rounded-full bg-[#f3f3f1] cursor-pointer hover:bg-[#e6e6db] disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${checkoutItem.quantity === 1 ? "opacity-50" : ""}`}
+                        onClick={() =>
+                          checkoutItem.quantity !== 1 &&
+                          updateQuantity(checkoutItem.itemKey, -1)
+                        }
+                        disabled={isProcessing || checkoutItem.quantity === 1}
+                      >
+                        -
+                      </button>
 
-            {/* Total */}
-            <div className="bg-[#f8f8f6] px-4 py-3 border-t border-[#e6e6db]">
-              <div className="flex justify-between items-center">
-                <span className="text-[#161613] text-lg font-bold">
-                  {t("checkout.total") || "Total"}
-                </span>
-                <span className="text-[#161613] text-lg font-bold">
-                  {totalAmount.toLocaleString()} {currency}
-                </span>
+                      <span className="text-base font-medium leading-normal min-w-[2rem] text-center">
+                        {checkoutItem.quantity}
+                      </span>
+                      <button
+                        className="text-base font-medium leading-normal flex h-8 w-8 items-center justify-center rounded-full bg-[#f3f3f1] cursor-pointer hover:bg-[#e6e6db] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        onClick={() => updateQuantity(checkoutItem.itemKey, 1)}
+                        disabled={isProcessing}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <button
+                      className="text-red-600 hover:text-red-800 p-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      onClick={() => removeItem(checkoutItem.itemKey)}
+                      disabled={isProcessing}
+                      title={t("checkout.remove_item") || "Remove item"}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        viewBox="0 0 256 256"
+                      >
+                        <path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Total */}
+              <div className="bg-[#f8f8f6] px-4 py-4 border-t border-[#e6e6db]">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#161613] text-lg font-bold">
+                    {t("checkout.total") || "Total"}
+                  </span>
+                  <span className="text-[#161613] text-lg font-bold">
+                    {totalAmount.toLocaleString()} {currency}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Empty state */}
-      {checkoutItems.length === 0 && (
-        <Link to={`/game/${gameSlug}/`} className="px-4 py-8 text-center">
-          <p className="text-[#80806b] text-base">
-            {t("checkout.no_items")}
-          </p>
-        </Link>
-      )}
+        {/* Empty state */}
+        {checkoutItems.length === 0 && (
+          <div className="px-4 py-8 text-center">
+            <div className="bg-gray-50 rounded-xl p-8">
+              <p className="text-[#80806b] text-base mb-4">
+                {t("checkout.no_items") || "No items selected"}
+              </p>
+              <Link 
+                to={`/game/${gameSlug}/`}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                {t("checkout.back_to_shop") || "Back to Shop"}
+              </Link>
+            </div>
+          </div>
+        )}
 
-      {/* Checkout Button */}
-      {checkoutItems.length > 0 && (
-        <div className="flex px-4 py-3">
-          <button
-            className={`flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 text-base font-bold leading-normal tracking-[0.015em] transition-colors ${
-              isPurchaseDisabled
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-[#d6d604] text-[#161613] hover:bg-[#c4c404]"
-            }`}
-            onClick={handlePurchase}
-            disabled={isPurchaseDisabled}
-          >
-            <span className="truncate">
-              {isProcessing
-                ? t("checkout.processing")
-                : t("checkout.complete_purchase") ||
-                  `Complete Purchase (${totalAmount.toLocaleString()} ${currency})`}
-            </span>
-          </button>
-        </div>
-      )}
+        {/* Checkout Button */}
+        {checkoutItems.length > 0 && (
+          <div className="flex px-4 py-4 border-t border-gray-200 bg-white sticky bottom-0">
+            <button
+              className={`flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 flex-1 text-base font-bold leading-normal tracking-[0.015em] transition-colors ${
+                isPurchaseDisabled
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-[#d6d604] text-[#161613] hover:bg-[#c4c404] shadow-lg"
+              }`}
+              onClick={handlePurchase}
+              disabled={isPurchaseDisabled}
+            >
+              <span className="truncate">
+                {isProcessing
+                  ? t("checkout.processing") || "Processing..."
+                  : t("checkout.complete_purchase") ||
+                    `Complete Purchase (${totalAmount.toLocaleString()} ${currency})`}
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
