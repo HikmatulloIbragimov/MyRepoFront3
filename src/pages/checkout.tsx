@@ -135,7 +135,7 @@ export const Checkout: React.FC = () => {
 
     const url = new URL(window.location.href);
     const searchParams = new URLSearchParams();
-
+    alert("🧪 quantities: " + JSON.stringify(quantities));
     // Add all non-zero quantities to search params
     Object.entries(quantities).forEach(([itemKey, quantity]) => {
       if (quantity > 0) {
