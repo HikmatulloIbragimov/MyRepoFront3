@@ -101,18 +101,33 @@ export const Checkout: React.FC = () => {
     const selectedItems: CheckoutItem[] = [];
     const initialQuantities: Quantities = {};
 
+    console.log("=== CHECKOUT DEBUG INFO ===");
     console.log("URL Parameters:", Array.from(urlParams.entries()));
-    console.log("Available merchandise:", gameData.game.merchandise.map(m => ({ id: m.id, slug: m.slug, name: m.name })));
+    console.log("Game slug:", gameSlug);
+    console.log("Total merchandise items:", gameData.game.merchandise.length);
+    
+    // Логируем все доступные товары
+    console.log("Available merchandise:");
+    gameData.game.merchandise.forEach((item, index) => {
+      console.log(`${index + 1}. ID: ${item.id}, Slug: "${item.slug}", Name: "${item.name}"`);
+    });
 
     urlParams.forEach((quantity, itemKey) => {
       const qty = parseInt(quantity);
+      console.log(`\nProcessing URL param: ${itemKey} = ${quantity}`);
+      
       if (qty > 0) {
         // Ищем товар только по slug
         const item = gameData.game.merchandise.find(
           (merch) => merch.slug === itemKey
         );
 
-        console.log(`Looking for item with slug: ${itemKey}, found:`, item);
+        console.log(`Looking for item with slug: "${itemKey}"`);
+        console.log(`Found item:`, item ? {
+          id: item.id,
+          slug: item.slug,
+          name: item.name
+        } : "NOT FOUND");
 
         if (item) {
           selectedItems.push({
@@ -121,16 +136,28 @@ export const Checkout: React.FC = () => {
             itemKey,
           });
           initialQuantities[itemKey] = qty;
+          console.log(`✅ Added to cart: ${item.name} (qty: ${qty})`);
         } else {
-          console.warn(`Item with slug "${itemKey}" not found in merchandise list`);
+          console.error(`❌ Item with slug "${itemKey}" not found in merchandise list`);
+          
+          // Попробуем найти похожие slug'и
+          const similarSlugs = gameData.game.merchandise
+            .map(m => m.slug)
+            .filter(slug => slug.includes(itemKey) || itemKey.includes(slug));
+          
+          if (similarSlugs.length > 0) {
+            console.log("Similar slugs found:", similarSlugs);
+          }
         }
       }
     });
 
-    console.log("Selected items:", selectedItems);
+    console.log("Final selected items:", selectedItems.length);
+    console.log("=== END DEBUG INFO ===");
+    
     setCheckoutItems(selectedItems);
     setQuantities(initialQuantities);
-  }, [gameData.game.merchandise]);
+  }, [gameData.game.merchandise, gameSlug]);
 
   // Effect to update URL when quantities change
   useEffect(() => {
